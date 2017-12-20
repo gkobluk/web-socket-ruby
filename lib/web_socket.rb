@@ -185,7 +185,7 @@ class WebSocket
       case @web_socket_version
         
         when "hixie-75", "hixie-76"
-          packet = gets(force_encoding("\xff", "UTF-8"))
+          packet = gets(force_encoding("\xff", "ASCII-8BIT"))
           return nil if !packet
           if packet =~ /\A\x00(.*)\xff\z/nm
             return force_encoding($1, "UTF-8")
@@ -281,7 +281,7 @@ class WebSocket
             if code == 1005
               payload = ""
             else
-              payload = [code].pack("n") + force_encoding(reason.dup(), "UTF-8")
+              payload = [code].pack("n") + force_encoding(reason.dup(), "ASCII-8BIT")
             end
             send_frame(OPCODE_CLOSE, payload, false)
         end
@@ -327,9 +327,9 @@ class WebSocket
       if WebSocket.debug
         $stderr.printf("send_frame> opcode:%d masked:%d payload:%p\n" % [opcode, mask ? 1 : 0, payload])
       end
-      payload = force_encoding(payload.dup(), "UTF-8")
-      # Setting StringIO's encoding to UTF-8.
-      buffer = StringIO.new(force_encoding("", "UTF-8"))
+      payload = force_encoding(payload.dup(), "ASCII-8BIT")
+      # Setting StringIO's encoding to ASCII-8BIT.
+      buffer = StringIO.new(force_encoding("", "ASCII-8BIT"))
       write_byte(buffer, 0x80 | opcode)
       masked_byte = mask ? 0x80 : 0x00
       if payload.bytesize <= 125
